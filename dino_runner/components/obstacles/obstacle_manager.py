@@ -6,26 +6,26 @@ from dino_runner.components.obstacles.obstacle import Obstacle
 
 
 class ObstacleManager:
-    OBSTACLES = [Bird(), Cactus()]
+    OBSTACLES = [Cactus, Bird]
     def __init__(self):
         self.obstacles: list[Obstacle] = []
         
 
-    def update(self, game):
+    def update(self, game_speed, player, on_death):
         if not self.obstacles: 
-            obstacle_type = random.randint(0, 1)
-            if self.OBSTACLES[obstacle_type] == self.OBSTACLES[0]:
-                self.obstacles.append(Bird())
-            else:
-                self.obstacles.append(Cactus())
+            obstacle_type = random.choice(self.OBSTACLES)
+            self.obstacles.append(obstacle_type())
             
         for obstacle in self.obstacles:
-            obstacle.update(game.game_speed, self.obstacles)
-            if obstacle.rect.colliderect(game.player.rect):
-                pygame.time.delay(500)
-                game.playing = False
+            obstacle.update(game_speed, self.obstacles)
+            if obstacle.rect.colliderect(player.rect):
+                on_death()
+                
 
 
     def draw(self, screen):
         for obstacle in self.obstacles:
             obstacle.draw(screen)
+
+    def reset(self):
+        self.obstacles = []

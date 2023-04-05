@@ -69,4 +69,16 @@ BG = pygame.image.load(os.path.join(IMG_DIR, 'Other/Track.png'))
 
 HEART = pygame.image.load(os.path.join(IMG_DIR, 'Other/SmallHeart.png'))
 
+START = pygame.image.load(os.path.join(IMG_DIR, 'Dino/DinoStart.png'))
+
+MUTED = pygame.image.load(os.path.join(IMG_DIR, 'Other/mute.png'))
+MAX = pygame.image.load(os.path.join(IMG_DIR, 'Other/max.png'))
+DOWN = pygame.image.load(os.path.join(IMG_DIR, 'Other/down.png'))
+UP = pygame.image.load(os.path.join(IMG_DIR, 'Other/up.png'))
+
+MUTED = pygame.transform.scale(MUTED, (100, 100))
+MAX = pygame.transform.scale(MAX, (100, 100))
+DOWN = pygame.transform.scale(DOWN, (100, 100))
+UP = pygame.transform.scale(UP, (100, 100))
+
 DEFAULT_TYPE = "default"

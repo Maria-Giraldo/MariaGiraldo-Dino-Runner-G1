@@ -10,10 +10,11 @@ class Bird(Obstacle):
         super().__init__(BIRD[0], pos_y = random.randint(200, 300))
         
 
-    def draw(self, screen):
+    def update(self, game_speed, obstacles):
+        self.image = BIRD[self.step // 5]
+        super().update(game_speed + 3 , obstacles)
         if self.step >= 9:  
             self.step = 0
-        screen.blit(BIRD[self.step // 5], self.rect)
         self.step += 1
 
     

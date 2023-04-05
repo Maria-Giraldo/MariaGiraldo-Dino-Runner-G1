@@ -18,15 +18,13 @@ class Dinosaur(Sprite):
         self.step = 0
         self.action = DINO_RUNNING
         self.jump_velocity = self.JUMP_VELOCITY
+        self.sound_jump = pygame.mixer.Sound("dino_runner/assets/sounds/SoundJump.wav")
 
     def position(self):
         self.rect = self.image.get_rect()
         self.rect.x = self.POS_X
         self.rect.y = self.POS_Y if self.action == DINO_RUNNING else self.POS_Y_DUCK
- 
-
         
-
     def update(self, user_input):
         if self.action == DINO_RUNNING:
             self.run()
@@ -36,7 +34,8 @@ class Dinosaur(Sprite):
             self.duck()
 
         if self.action != DINO_JUMPING:
-            if user_input[pygame.K_UP]:
+            if user_input[pygame.K_UP]:        
+                self.sound_jump.play()
                 self.action = DINO_JUMPING
             elif user_input[pygame.K_DOWN]:
                 self.action = DINO_DUCKING
