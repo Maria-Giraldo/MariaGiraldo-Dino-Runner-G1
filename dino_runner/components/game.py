@@ -2,7 +2,7 @@ import pygame
 from dino_runner.components.obstacles.obstacle_manager import ObstacleManager
 from dino_runner.components.score import Score
 
-from dino_runner.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, START, TITLE, FPS, DOWN, UP, MAX, MUTED
+from dino_runner.utils.constants import BG, GAMEOVER, ICON, ICON_DEAD, ICON_MOV, ICON_VOLUM1, ICON_VOLUM2, SCREEN_HEIGHT, SCREEN_WIDTH, START, TITLE, FPS, DOWN, UP, MAX, MUTED
 from dino_runner.components.cloud import Cloud
 from dino_runner.components.dinosaur import Dinosaur
 
@@ -20,11 +20,11 @@ class Game:
         self.cloud = Cloud()
         self.player = Dinosaur()
         self.obstacle_manager = ObstacleManager()
-        pygame.mixer.music.load("dino_runner/assets/sounds/SoundMain.wav")
-        pygame.mixer.music.play(-1)
         self.running = False
         self.score = Score()
         self.death_count = 0
+        self.highest_score = []
+        
 
 
     def run(self):
@@ -36,6 +36,9 @@ class Game:
 
     def play(self):
         self.playing = True
+        pygame.mixer.music.load("dino_runner/assets/sounds/SoundMain.wav")
+        pygame.mixer.music.play(-1)
+        self.game_speed = 20
         self.score.reset()
         self.obstacle_manager.reset()
         while self.playing:
@@ -63,7 +66,7 @@ class Game:
         self.cloud.draw(self.screen)
         self.player.draw(self.screen)
         self.obstacle_manager.draw(self.screen)
-        self.score.draw(self.screen)
+        self.score.draw(self.position_menu)
         self.volume(user_input)
         pygame.display.update()
         pygame.display.flip()
@@ -108,22 +111,38 @@ class Game:
         pygame.time.delay(3000)
         self.playing = False
         self.death_count += 1
-        print("i'm death")
+        self.highest_score.append(self.score.score + 1)
+        print(self.highest_score)
+
+
+   
         
+    def position_menu(self, message, width, height, color):
+        font = pygame.font.Font("freesansbold.ttf", 30)
+        text = font.render(message, True, color)
+        text_rect = text.get_rect()
+        text_rect.center = (width, height)
+        self.screen.blit(text, text_rect)
+
 
     def show_menu(self):
         half_screen_height = SCREEN_HEIGHT // 2
         half_screen_width = SCREEN_WIDTH // 2
         self.screen.fill((255, 255, 255))
         if self.death_count:
-            pass
+            self.position_menu("Pres any key to reset", half_screen_width, half_screen_height, (83, 83, 83))
+            self.position_menu(f'Total deaths: {self.death_count}', half_screen_width, 420, (83, 83, 83))
+            self.position_menu(f"Highest Score: {max(self.highest_score)}", half_screen_width, half_screen_height + 80, (83, 83, 83))
+            self.position_menu(f"Score: {self.score.score}", half_screen_width, half_screen_height + 40, (83, 83, 83))
+
+            self.screen.blit(GAMEOVER, (half_screen_width - 200, half_screen_height - 150))
+            self.screen.blit(ICON_DEAD, (half_screen_width - 45, half_screen_height - 100))
         else: 
-            font = pygame.font.Font("freesansbold.ttf", 30)
-            text = font.render("Press any key to start", True, (0, 0, 0))
-            text_rect = text.get_rect()
-            text_rect.center = (half_screen_width, half_screen_height)
-            self.screen.blit(text, text_rect)
+            self.position_menu("Press ant key to start", half_screen_width, half_screen_height, (0, 0, 0))
             self.screen.blit(START, (half_screen_width - 45, half_screen_height - 140))
+            self.screen.blit(ICON_MOV, (half_screen_width - 600, half_screen_height + 90))
+            self.screen.blit(ICON_VOLUM1, (half_screen_width + 100, half_screen_height + 90))
+            self.screen.blit(ICON_VOLUM2, (half_screen_width + 200, half_screen_height + 90))
         pygame.display.flip()
         self.menu_events()
 
@@ -134,7 +153,7 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 self.play()
         
-
+       
 
         
         
