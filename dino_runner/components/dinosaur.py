@@ -2,15 +2,16 @@ import pygame
 from pygame import surface
 from pygame.sprite import Sprite
 
-from dino_runner.utils.constants import  DEFAULT_TYPE, DUCKING_SHIELD, JUMPING, JUMPING_SHIELD, RUNNING, DUCKING, RUNNING_SHIELD, SHIELD_TYPE
+
+from dino_runner.utils.constants import  DEFAULT_TYPE, DUCKING_HAMMER, DUCKING_SHIELD, DUCKING_WEAPON, FIRE_TYPE, HAMMER_TYPE, HEART, HEART_TYPE, JUMPING, JUMPING_HAMMER, JUMPING_SHIELD, JUMPING_WEAPON, RUNNING, DUCKING, RUNNING_HAMMER, RUNNING_SHIELD, RUNNING_WEAPON, SHIELD_TYPE, WEAPON_TYPE
 
 DINO_JUMPING = "JUMPING"
 DINO_RUNNING = "RUNNING"
 DINO_DUCKING = "DUCKING"
 
-IMG_DUCKING = {DEFAULT_TYPE: DUCKING, SHIELD_TYPE: DUCKING_SHIELD}
-IMG_JUMPING = {DEFAULT_TYPE: JUMPING, SHIELD_TYPE: JUMPING_SHIELD}
-IMG_RUNNING = {DEFAULT_TYPE: RUNNING, SHIELD_TYPE: RUNNING_SHIELD}
+IMG_DUCKING = {DEFAULT_TYPE: DUCKING, SHIELD_TYPE: DUCKING_SHIELD, HAMMER_TYPE: DUCKING_HAMMER, HEART_TYPE: DUCKING, WEAPON_TYPE: DUCKING_WEAPON, FIRE_TYPE: DUCKING}
+IMG_JUMPING = {DEFAULT_TYPE: JUMPING, SHIELD_TYPE: JUMPING_SHIELD, HAMMER_TYPE: JUMPING_HAMMER, HEART_TYPE: JUMPING, WEAPON_TYPE: JUMPING_WEAPON, FIRE_TYPE: JUMPING}
+IMG_RUNNING = {DEFAULT_TYPE: RUNNING, SHIELD_TYPE: RUNNING_SHIELD, HAMMER_TYPE: RUNNING_HAMMER, HEART_TYPE: RUNNING, WEAPON_TYPE: RUNNING_WEAPON, FIRE_TYPE: RUNNING}
 
 class Dinosaur(Sprite):
     POS_X = 80
@@ -26,7 +27,8 @@ class Dinosaur(Sprite):
         self.jump_velocity = self.JUMP_VELOCITY
         self.power_up_time_up = 0
         self.sound_jump = pygame.mixer.Sound("dino_runner/assets/sounds/SoundJump.wav")
-     
+        self.sound_jump_shield = pygame.mixer.Sound("dino_runner/assets/sounds/SoundJumpShield.wav")
+  
     def update(self, user_input):
         if self.action == DINO_RUNNING:
             self.run()
@@ -36,8 +38,12 @@ class Dinosaur(Sprite):
             self.duck()
 
         if self.action != DINO_JUMPING:
-            if user_input[pygame.K_UP]:        
-                self.sound_jump.play()
+            if user_input[pygame.K_UP]:       
+                if self.type == SHIELD_TYPE:
+                    self.sound_jump_shield.play()
+                else:
+                    self.sound_jump.play()
+
                 self.action = DINO_JUMPING
             elif user_input[pygame.K_DOWN]:
                 self.action = DINO_DUCKING
@@ -73,7 +79,9 @@ class Dinosaur(Sprite):
 
     def draw(self, screen: surface):
         screen.blit(self.image, (self.rect.x, self.rect.y))
-    
+        if self.type == HEART_TYPE:
+            screen.blit(HEART, (1000, 100))
+             
     def on_pick_power_up(self, power_up):
         self.type = power_up.type
         self.power_up_time_up = power_up.start_time + power_up.duration * 1000
@@ -82,7 +90,12 @@ class Dinosaur(Sprite):
         if self.type != DEFAULT_TYPE:
             time_to_show = round((self.power_up_time_up - pygame.time.get_ticks()) / 1000, 2)
             if time_to_show >= 0:
-                menu(f"{self.type.capitalize()} enabled for {time_to_show} seconds", 450, 50, (0, 0, 0))
+                if self.type == HEART_TYPE:
+                    menu(f"You have infinite life for {time_to_show} seconds" , 450, 50, (0, 0, 0))
+                
+                else: 
+                    menu(f"{self.type.capitalize()} enabled for {time_to_show} seconds", 450, 50, (0, 0, 0))
+
             else:
                 self.type = DEFAULT_TYPE
                 self.power_up_time_up = 0

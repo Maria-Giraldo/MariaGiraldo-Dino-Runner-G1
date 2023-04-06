@@ -1,4 +1,4 @@
-import pygame , random
+import random
 from dino_runner.utils.constants import CLOUD, SCREEN_WIDTH
 
 class Cloud:
@@ -15,5 +15,4 @@ class Cloud:
             self.y = random.randint(50, 200)
 
     def draw(self, screen):
-
         screen.blit(self.image, (self.x, self.y))

@@ -1,9 +1,10 @@
 import pygame
+
 from dino_runner.components.obstacles.obstacle_manager import ObstacleManager
+from dino_runner.components.power_ups.fire_ball import FireBall
 from dino_runner.components.power_ups.power_up_manager import PowerUpManager
 from dino_runner.components.score import Score
-
-from dino_runner.utils.constants import BG, DEAD, GAMEOVER, ICON, ICON_DEAD, ICON_MOV, ICON_VOLUM1, ICON_VOLUM2, SCREEN_HEIGHT, SCREEN_WIDTH, SHIELD_TYPE, START, TITLE, FPS, DOWN, UP, MAX, MUTED
+from dino_runner.utils.constants import BG, DEAD, DEFAULT_TYPE, FIRE_TYPE, GAMEOVER, HAMMER_TYPE, HEART_TYPE, ICON, ICON_DEAD, ICON_MOV, ICON_VOLUM1, SCREEN_HEIGHT, SCREEN_WIDTH, SHIELD_TYPE, START, TITLE, FPS, DOWN, UP, MAX, MUTED, WEAPON_TYPE
 from dino_runner.components.cloud import Cloud
 from dino_runner.components.dinosaur import Dinosaur
 
@@ -24,8 +25,8 @@ class Game:
         self.running = False
         self.score = Score()
         self.death_count = 0
-        self.highest_score = []
         self.power_up_manager = PowerUpManager()
+        self.fire_ball = FireBall()
         
     def run(self):
         self.running = True
@@ -59,19 +60,19 @@ class Game:
         user_input = pygame.key.get_pressed()
         self.player.update(user_input)
         self.cloud.update(self)
-        self.obstacle_manager.update(self.game_speed, self.player, self.on_death)
+        self.obstacle_manager.update(self.game_speed, self.player, self.on_death, user_input)
         self.score.update(self)
         self.power_up_manager.update(self.game_speed, self.score.score, self.player)
 
     def draw(self):
         user_input = pygame.key.get_pressed()
         self.clock.tick(FPS)
-        self.screen.fill((255, 255, 255))
+        self.screen.fill((112, 211, 231))
         self.draw_background()
         self.cloud.draw(self.screen)
         self.player.draw(self.screen)
         self.player.draw_power_up(self.menu)
-        self.obstacle_manager.draw(self.screen)
+        self.obstacle_manager.draw(self.screen, self.player)
         self.score.draw(self.menu)
         self.power_up_manager.draw(self.screen)
         self.volume(user_input)
@@ -88,42 +89,33 @@ class Game:
         self.x_pos_bg -= self.game_speed
 
     def volume(self, user_input):
+
         #bajar volumen
-        if user_input[pygame.K_s] and pygame.mixer.music.get_volume() > 0.0:
+        if user_input[pygame.K_e] and pygame.mixer.music.get_volume() > 0.0:
             pygame.mixer.music.set_volume( pygame.mixer.music.get_volume() - 0.01)
-            self.screen.blit(DOWN, (10, 25))
-        elif user_input[pygame.K_s] and pygame.mixer.music.get_volume() == 0.0:
-            self.screen.blit(MUTED, (10, 25))
+            self.screen.blit(DOWN, (10, 60))
+        elif user_input[pygame.K_e] and pygame.mixer.music.get_volume() == 0.0:
+            self.screen.blit(MUTED, (10, 60))
 
         #subir volumen
-        if user_input[pygame.K_w] and pygame.mixer.music.get_volume() < 1.0:
+        if user_input[pygame.K_r] and pygame.mixer.music.get_volume() < 1.0:
             pygame.mixer.music.set_volume( pygame.mixer.music.get_volume() + 0.01)
-            self.screen.blit(UP, (10, 25))
-        elif user_input[pygame.K_w] and pygame.mixer.music.get_volume() == 1.0:
-            self.screen.blit(MAX, (10, 25))
-
-
-        #Desactivar sonido
-        if user_input[pygame.K_d]:
-            pygame.mixer.music.set_volume(0.0)
-            self.screen.blit(MUTED, (10, 25))
-        #activar sonido
-        if user_input[pygame.K_a]:
-            pygame.mixer.music.set_volume(1.0)
-            self.screen.blit(MAX, (10, 25))
+            self.screen.blit(UP, (10, 60))
+        elif user_input[pygame.K_r] and pygame.mixer.music.get_volume() == 1.0:
+            self.screen.blit(MAX, (10, 60))
 
     def on_death(self):
-        player_invincible = self.player.type == SHIELD_TYPE
-        if not player_invincible:
+        if self.player.type == HEART_TYPE:
+            self.game_speed = 20
+        if self.player.type != SHIELD_TYPE:
             self.player.update_image(DEAD, on_death=True)
             self.draw()
             self.playing = False
             self.death_count += 1
-            self.highest_score.append(self.score.score + 1)
             pygame.mixer.music.load("dino_runner/assets/sounds/SoundDeath.wav")
             pygame.mixer.music.play()
             pygame.time.delay(3000)
-   
+
     def menu(self, message, width, height, color):
         font = pygame.font.Font("freesansbold.ttf", 30)
         text = font.render(message, True, color)
@@ -138,17 +130,15 @@ class Game:
         if self.death_count:
             self.menu("Pres any key to reset", half_screen_width, half_screen_height, (83, 83, 83))
             self.menu(f'Total deaths: {self.death_count}', half_screen_width, 420, (83, 83, 83))
-            self.menu(f"Highest Score: {max(self.highest_score)}", half_screen_width, half_screen_height + 80, (83, 83, 83))
-            self.menu(f"Score: {self.score.score}", half_screen_width, half_screen_height + 40, (83, 83, 83))
-
+            self.menu(f"Score: {self.score.score}", half_screen_width, 380, (83, 83, 83))
             self.screen.blit(GAMEOVER, (half_screen_width - 200, half_screen_height - 150))
-            self.screen.blit(ICON_DEAD, (half_screen_width - 45, half_screen_height - 100))
+            self.screen.blit(ICON_DEAD, (half_screen_width - 45, half_screen_height - 100)) 
         else: 
             self.menu("Press any key to start", half_screen_width, half_screen_height, (0, 0, 0))
             self.screen.blit(START, (half_screen_width - 45, half_screen_height - 140))
             self.screen.blit(ICON_MOV, (half_screen_width - 600, half_screen_height + 90))
             self.screen.blit(ICON_VOLUM1, (half_screen_width + 100, half_screen_height + 90))
-            self.screen.blit(ICON_VOLUM2, (half_screen_width + 200, half_screen_height + 90))
+
         pygame.display.flip()
         self.menu_events()
 
@@ -158,8 +148,8 @@ class Game:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
                 self.play()
+
         
        
-
         
         
