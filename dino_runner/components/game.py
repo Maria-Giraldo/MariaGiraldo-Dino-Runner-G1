@@ -1,8 +1,9 @@
 import pygame
 from dino_runner.components.obstacles.obstacle_manager import ObstacleManager
+from dino_runner.components.power_ups.power_up_manager import PowerUpManager
 from dino_runner.components.score import Score
 
-from dino_runner.utils.constants import BG, GAMEOVER, ICON, ICON_DEAD, ICON_MOV, ICON_VOLUM1, ICON_VOLUM2, SCREEN_HEIGHT, SCREEN_WIDTH, START, TITLE, FPS, DOWN, UP, MAX, MUTED
+from dino_runner.utils.constants import BG, DEAD, GAMEOVER, ICON, ICON_DEAD, ICON_MOV, ICON_VOLUM1, ICON_VOLUM2, SCREEN_HEIGHT, SCREEN_WIDTH, SHIELD_TYPE, START, TITLE, FPS, DOWN, UP, MAX, MUTED
 from dino_runner.components.cloud import Cloud
 from dino_runner.components.dinosaur import Dinosaur
 
@@ -24,9 +25,8 @@ class Game:
         self.score = Score()
         self.death_count = 0
         self.highest_score = []
+        self.power_up_manager = PowerUpManager()
         
-
-
     def run(self):
         self.running = True
         while self.running:
@@ -34,13 +34,17 @@ class Game:
                 self.show_menu()
         pygame.quit()
 
+    def reset(self):
+        self.game_speed = 20
+        self.score.reset()
+        self.obstacle_manager.reset()
+        self.power_up_manager.reset()
+
     def play(self):
         self.playing = True
         pygame.mixer.music.load("dino_runner/assets/sounds/SoundMain.wav")
         pygame.mixer.music.play(-1)
-        self.game_speed = 20
-        self.score.reset()
-        self.obstacle_manager.reset()
+        self.reset()
         while self.playing:
             self.events()
             self.update()
@@ -57,6 +61,7 @@ class Game:
         self.cloud.update(self)
         self.obstacle_manager.update(self.game_speed, self.player, self.on_death)
         self.score.update(self)
+        self.power_up_manager.update(self.game_speed, self.score.score, self.player)
 
     def draw(self):
         user_input = pygame.key.get_pressed()
@@ -65,8 +70,10 @@ class Game:
         self.draw_background()
         self.cloud.draw(self.screen)
         self.player.draw(self.screen)
+        self.player.draw_power_up(self.menu)
         self.obstacle_manager.draw(self.screen)
-        self.score.draw(self.position_menu)
+        self.score.draw(self.menu)
+        self.power_up_manager.draw(self.screen)
         self.volume(user_input)
         pygame.display.update()
         pygame.display.flip()
@@ -106,39 +113,38 @@ class Game:
             self.screen.blit(MAX, (10, 25))
 
     def on_death(self):
-        pygame.mixer.music.load("dino_runner/assets/sounds/SoundDeath.wav")
-        pygame.mixer.music.play()
-        pygame.time.delay(3000)
-        self.playing = False
-        self.death_count += 1
-        self.highest_score.append(self.score.score + 1)
-        print(self.highest_score)
-
-
+        player_invincible = self.player.type == SHIELD_TYPE
+        if not player_invincible:
+            self.player.update_image(DEAD, on_death=True)
+            self.draw()
+            self.playing = False
+            self.death_count += 1
+            self.highest_score.append(self.score.score + 1)
+            pygame.mixer.music.load("dino_runner/assets/sounds/SoundDeath.wav")
+            pygame.mixer.music.play()
+            pygame.time.delay(3000)
    
-        
-    def position_menu(self, message, width, height, color):
+    def menu(self, message, width, height, color):
         font = pygame.font.Font("freesansbold.ttf", 30)
         text = font.render(message, True, color)
         text_rect = text.get_rect()
         text_rect.center = (width, height)
         self.screen.blit(text, text_rect)
 
-
     def show_menu(self):
         half_screen_height = SCREEN_HEIGHT // 2
         half_screen_width = SCREEN_WIDTH // 2
         self.screen.fill((255, 255, 255))
         if self.death_count:
-            self.position_menu("Pres any key to reset", half_screen_width, half_screen_height, (83, 83, 83))
-            self.position_menu(f'Total deaths: {self.death_count}', half_screen_width, 420, (83, 83, 83))
-            self.position_menu(f"Highest Score: {max(self.highest_score)}", half_screen_width, half_screen_height + 80, (83, 83, 83))
-            self.position_menu(f"Score: {self.score.score}", half_screen_width, half_screen_height + 40, (83, 83, 83))
+            self.menu("Pres any key to reset", half_screen_width, half_screen_height, (83, 83, 83))
+            self.menu(f'Total deaths: {self.death_count}', half_screen_width, 420, (83, 83, 83))
+            self.menu(f"Highest Score: {max(self.highest_score)}", half_screen_width, half_screen_height + 80, (83, 83, 83))
+            self.menu(f"Score: {self.score.score}", half_screen_width, half_screen_height + 40, (83, 83, 83))
 
             self.screen.blit(GAMEOVER, (half_screen_width - 200, half_screen_height - 150))
             self.screen.blit(ICON_DEAD, (half_screen_width - 45, half_screen_height - 100))
         else: 
-            self.position_menu("Press ant key to start", half_screen_width, half_screen_height, (0, 0, 0))
+            self.menu("Press any key to start", half_screen_width, half_screen_height, (0, 0, 0))
             self.screen.blit(START, (half_screen_width - 45, half_screen_height - 140))
             self.screen.blit(ICON_MOV, (half_screen_width - 600, half_screen_height + 90))
             self.screen.blit(ICON_VOLUM1, (half_screen_width + 100, half_screen_height + 90))
