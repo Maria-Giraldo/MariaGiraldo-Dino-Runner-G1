@@ -125,6 +125,13 @@ class Game:
             pygame.mixer.music.load("dino_runner/assets/sounds/SoundDeath.wav")
             pygame.mixer.music.play()
             pygame.time.delay(3000)
+        elif self.player.type == SHIELD_TYPE and self.score.score >= 1000:
+            self.player.update_image(DEAD, on_death=True)
+            self.playing = False
+            self.death_count += 1
+            pygame.mixer.music.load("dino_runner/assets/sounds/SoundDeath.wav")
+            pygame.mixer.music.play()
+            pygame.time.delay(3000)
 
     def menu(self, message, width, height, color):
         font = pygame.font.Font("freesansbold.ttf", 30)
