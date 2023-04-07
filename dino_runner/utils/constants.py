@@ -112,13 +112,24 @@ DOWN = pygame.transform.scale(DOWN, (50, 50))
 UP = pygame.transform.scale(UP, (50, 50))
 
 DEAD = pygame.image.load(os.path.join(IMG_DIR, 'Dino/DinoDead.png'))
-ICON_MOV = pygame.image.load(os.path.join(IMG_DIR, 'Other/InstruccionMover.png'))
-ICON_MOV = pygame.transform.scale(ICON_MOV, (310, 200))
+ICON_MOV = pygame.image.load(os.path.join(IMG_DIR, 'Other/InstruccionesMover.png'))
+ICON_MOV = pygame.transform.scale(ICON_MOV, (255, 220))
 ICON_VOLUM1 = pygame.image.load(os.path.join(IMG_DIR, 'Other/InstruccionVolumen1.png'))
-ICON_VOLUM1 = pygame.transform.scale(ICON_VOLUM1, (310, 200))
+ICON_VOLUM1 = pygame.transform.scale(ICON_VOLUM1, (150, 100))
 FIREBALL = pygame.image.load(os.path.join(IMG_DIR, 'Other/FireBola.png'))
 FIREBALL = pygame.transform.scale(FIREBALL, (60, 40))
-
+METEORITO = pygame.image.load(os.path.join(IMG_DIR, 'Other/meteorito.png'))
+METEORITO_TAM1 = pygame.transform.scale(METEORITO, (70, 70))
+METEORITO_TAM2 = pygame.transform.scale(METEORITO, (50, 50))
+METEORITO_TAM3 = pygame.transform.scale(METEORITO, (20, 20))
+ICON_HAMMER = pygame.image.load(os.path.join(IMG_DIR, 'Other/Insctruccion_Hammer.png'))
+ICON_HAMMER = pygame.transform.scale(ICON_HAMMER, (250, 250))
+ICON_WEAPON = pygame.image.load(os.path.join(IMG_DIR, 'Other/Instruccion_Weapon.png'))
+ICON_WEAPON = pygame.transform.scale(ICON_WEAPON, (220, 220))
+ICON_FIRE = pygame.image.load(os.path.join(IMG_DIR, 'Other/instruccion_Fire.png'))
+ICON_FIRE = pygame.transform.scale(ICON_FIRE, (270, 270))
+ICON_HEART_SHIELD = pygame.image.load(os.path.join(IMG_DIR, 'Other/Instruccion_Heart_Shield.png'))
+ICON_HEART_SHIELD = pygame.transform.scale(ICON_HEART_SHIELD, (230, 220))
 
 DEFAULT_TYPE = "default"
 SHIELD_TYPE = "shield"

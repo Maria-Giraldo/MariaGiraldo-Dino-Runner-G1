@@ -1,6 +1,7 @@
 import pygame 
 from pygame import surface
 from pygame.sprite import Sprite
+from dino_runner.components.score import Score
 
 
 from dino_runner.utils.constants import  DEFAULT_TYPE, DUCKING_HAMMER, DUCKING_SHIELD, DUCKING_WEAPON, FIRE_TYPE, HAMMER_TYPE, HEART, HEART_TYPE, JUMPING, JUMPING_HAMMER, JUMPING_SHIELD, JUMPING_WEAPON, RUNNING, DUCKING, RUNNING_HAMMER, RUNNING_SHIELD, RUNNING_WEAPON, SHIELD_TYPE, WEAPON_TYPE
@@ -8,6 +9,8 @@ from dino_runner.utils.constants import  DEFAULT_TYPE, DUCKING_HAMMER, DUCKING_S
 DINO_JUMPING = "JUMPING"
 DINO_RUNNING = "RUNNING"
 DINO_DUCKING = "DUCKING"
+DINO_RIGHT   =  "RIGHT"
+DINO_LEFT    =  "LEFT"
 
 IMG_DUCKING = {DEFAULT_TYPE: DUCKING, SHIELD_TYPE: DUCKING_SHIELD, HAMMER_TYPE: DUCKING_HAMMER, HEART_TYPE: DUCKING, WEAPON_TYPE: DUCKING_WEAPON, FIRE_TYPE: DUCKING}
 IMG_JUMPING = {DEFAULT_TYPE: JUMPING, SHIELD_TYPE: JUMPING_SHIELD, HAMMER_TYPE: JUMPING_HAMMER, HEART_TYPE: JUMPING, WEAPON_TYPE: JUMPING_WEAPON, FIRE_TYPE: JUMPING}
@@ -28,14 +31,19 @@ class Dinosaur(Sprite):
         self.power_up_time_up = 0
         self.sound_jump = pygame.mixer.Sound("dino_runner/assets/sounds/SoundJump.wav")
         self.sound_jump_shield = pygame.mixer.Sound("dino_runner/assets/sounds/SoundJumpShield.wav")
+        self.score = Score()
   
-    def update(self, user_input):
+    def update(self, user_input, game_speed):
         if self.action == DINO_RUNNING:
             self.run()
         elif self.action == DINO_JUMPING:
             self.jump()
         elif self.action == DINO_DUCKING:
             self.duck()
+        elif self.action == DINO_RIGHT:
+            self.right(game_speed)
+        elif self.action == DINO_LEFT:
+            self.left(game_speed)
 
         if self.action != DINO_JUMPING:
             if user_input[pygame.K_UP]:       
@@ -43,12 +51,22 @@ class Dinosaur(Sprite):
                     self.sound_jump_shield.play()
                 else:
                     self.sound_jump.play()
-
                 self.action = DINO_JUMPING
+
             elif user_input[pygame.K_DOWN]:
                 self.action = DINO_DUCKING
+
+            elif user_input[pygame.K_RIGHT] and self.action == DINO_RUNNING:
+                self.action = DINO_RIGHT
+
+            elif user_input[pygame.K_LEFT] and self.action == DINO_RUNNING:
+                    self.action = DINO_LEFT
+
             else:
                 self.action = DINO_RUNNING
+
+        if self.score.score >= 1000:
+            self.action = DINO_RUNNING
 
         if self.step >= 10:
             self.step = 0
@@ -70,12 +88,23 @@ class Dinosaur(Sprite):
         self.update_image(IMG_DUCKING[self.type][self.step //5], pos_y=self.POS_Y_DUCK)
         self.step += 1
    
+    def right(self, game_speed):
+        self.POS_X += game_speed
+        if self.POS_X >= 1000:
+            self.POS_X = 1000
+
+    def left(self, game_speed):
+        self.POS_X -= game_speed
+        if self.POS_X <= 0:
+            self.POS_X = 0
+
     def update_image(self, image: pygame.Surface, pos_x = None, pos_y = None, on_death = False):
         self.image = image
         if not on_death:
            self.rect = image.get_rect()
            self.rect.x = pos_x or self.POS_X
            self.rect.y = pos_y or self.POS_Y
+           self.width = self.image.get_width()
 
     def draw(self, screen: surface):
         screen.blit(self.image, (self.rect.x, self.rect.y))
@@ -99,9 +128,6 @@ class Dinosaur(Sprite):
             else:
                 self.type = DEFAULT_TYPE
                 self.power_up_time_up = 0
-
-
-
 
 
 
