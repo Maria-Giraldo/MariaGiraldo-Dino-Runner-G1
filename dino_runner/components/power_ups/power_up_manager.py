@@ -9,7 +9,7 @@ from dino_runner.components.power_ups.weapon import Weapon
 
 
 class PowerUpManager:
-    RANDOM_POWERS = [ Shield]
+    RANDOM_POWERS = [Weapon, Hammer, Heart, Shield, Fire]
 
     def __init__(self):
         self.power_ups: list[PowerUp] = []
